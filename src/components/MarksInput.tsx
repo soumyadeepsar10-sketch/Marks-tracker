@@ -145,7 +145,7 @@ export default function MarksInput({ papers, setPapers }: MarksInputProps) {
               >
                 <div className="flex-1">
                   <h3 className="font-semibold text-zinc-900 dark:text-white mb-1 truncate">
-                    {paper.name}
+                    {paper.name.trim() || `Paper ${papers.indexOf(paper) + 1}`}
                   </h3>
                   <p className="text-xs text-zinc-500">Max Marks: {paper.totalMarks}</p>
                 </div>

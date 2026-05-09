@@ -17,7 +17,7 @@ export default function OverallStats({ papers, viewMode, theme }: OverallStatsPr
   const chartData = papers.map((paper, index) => {
     const percentage = paper.totalMarks > 0 ? ((paper.obtainedMarks || 0) / paper.totalMarks) * 100 : 0;
     return {
-      name: paper.name,
+      name: paper.name.trim() || `Paper ${index + 1}`,
       value: viewMode === 'marks' ? (paper.obtainedMarks || 0) : Number(percentage.toFixed(1)),
       max: viewMode === 'marks' ? paper.totalMarks : 100,
       colorIndex: index

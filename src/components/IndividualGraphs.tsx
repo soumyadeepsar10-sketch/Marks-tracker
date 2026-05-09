@@ -42,7 +42,7 @@ export default function IndividualGraphs({ papers, viewMode, theme }: Individual
               <div className="flex justify-between items-start mb-6">
                 <div>
                   <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-1 truncate max-w-[200px]">
-                    {paper.name}
+                    {paper.name.trim() || `Paper ${index + 1}`}
                   </h3>
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-mono font-medium text-zinc-400">
