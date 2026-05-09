@@ -6,6 +6,9 @@
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
 }
 
+/* Enable class-based dark mode for the dark: variant */
+@variant dark (&:where(.dark, .dark *));
+
 @layer base {
   body {
     @apply transition-colors duration-300;
