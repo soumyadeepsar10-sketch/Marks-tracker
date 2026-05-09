@@ -115,7 +115,7 @@ export default function App() {
           animate={{ opacity: 1, scale: 1 }}
           className="text-5xl md:text-7xl font-black text-zinc-900 dark:text-white tracking-tighter mb-4"
         >
-          Marks<span className="text-zinc-400 dark:text-zinc-600">Track.</span>
+          Kokanand<span className="text-zinc-400 dark:text-zinc-600"> Tracker.</span>
         </motion.h1>
       </header>
 
@@ -218,7 +218,7 @@ export default function App() {
       {/* Footer */}
       <footer className="fixed bottom-0 left-0 w-full p-6 flex justify-center pointer-events-none">
         <div className="pointer-events-auto bg-white/70 dark:bg-zinc-900/70 backdrop-blur-lg border border-zinc-200 dark:border-zinc-800 px-6 py-2 rounded-full text-[10px] font-bold uppercase tracking-[0.3em] text-zinc-400 shadow-xl">
-          MarksTrack v2.0
+          Kokanand Tracker v2.0
         </div>
       </footer>
     </div>
