@@ -5,7 +5,6 @@
 
 import { useState, useEffect } from 'react';
 import { Paper, Test, ViewMode, Theme } from './types';
-import ThemeToggle from './components/ThemeToggle';
 import MarksInput from './components/MarksInput';
 import OverallStats from './components/OverallStats';
 import IndividualGraphs from './components/IndividualGraphs';
@@ -18,14 +17,16 @@ export default function App() {
   const [tests, setTests] = useState<Test[]>([]);
   const [activeTestId, setActiveTestId] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>('percentage');
-  const [theme, setTheme] = useState<Theme>('light');
+  const theme: Theme = 'dark'; // Forced to dark
 
   const activeTest = tests.find(t => t.id === activeTestId) || null;
 
   // Load from local storage on mount
   useEffect(() => {
     const savedTests = localStorage.getItem('marks_tracker_tests');
-    const savedTheme = localStorage.getItem('marks_tracker_theme') as Theme;
+    
+    // Always apply dark mode class to root
+    document.documentElement.classList.add('dark');
     
     if (savedTests) {
       const parsedTests = JSON.parse(savedTests);
@@ -46,11 +47,6 @@ export default function App() {
       setTests([exampleTest]);
       setActiveTestId(exampleTest.id);
     }
-    
-    if (savedTheme) {
-      setTheme(savedTheme);
-      if (savedTheme === 'dark') document.documentElement.classList.add('dark');
-    }
   }, []);
 
   // Save to local storage on change
@@ -59,17 +55,6 @@ export default function App() {
       localStorage.setItem('marks_tracker_tests', JSON.stringify(tests));
     }
   }, [tests]);
-
-  useEffect(() => {
-    localStorage.setItem('marks_tracker_theme', theme);
-    if (theme === 'dark') {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-  }, [theme]);
-
-  const toggleTheme = () => setTheme(prev => prev === 'light' ? 'dark' : 'light');
 
   const handleUpdateActiveTest = (updatedPapers: Paper[]) => {
     if (!activeTestId) return;
@@ -91,7 +76,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-black font-sans selection:bg-indigo-500 selection:text-white" id="main-app-container">
-      <ThemeToggle theme={theme} onToggle={toggleTheme} />
+      {/* ThemeToggle removed */}
 
       {/* Hero Header */}
       <header className="pt-20 pb-6 px-4 text-center">
