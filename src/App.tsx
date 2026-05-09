@@ -17,7 +17,7 @@ import { cn } from './lib/utils';
 export default function App() {
   const [tests, setTests] = useState<Test[]>([]);
   const [activeTestId, setActiveTestId] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState<ViewMode>('percentage');
+  const [viewMode, setViewMode] = useState<ViewMode>('marks');
   const [theme, setTheme] = useState<Theme>('light');
 
   const activeTest = tests.find(t => t.id === activeTestId) || null;
@@ -175,42 +175,7 @@ export default function App() {
                 />
               </div>
 
-              {/* View Mode Toggle */}
-              {hasData && (
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="flex justify-center mb-12 sticky top-4 z-40"
-                  id="global-view-toggle"
-                >
-                  <div className="flex bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl border border-zinc-200 dark:border-zinc-800 p-1.5 rounded-[2rem] shadow-2xl shadow-indigo-500/10">
-                    <button
-                      onClick={() => setViewMode('marks')}
-                      className={cn(
-                        "flex items-center gap-2 px-6 py-3 rounded-[1.5rem] text-sm font-bold transition-all",
-                        viewMode === 'marks' 
-                          ? "bg-indigo-600 text-white shadow-lg shadow-indigo-500/30" 
-                          : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200"
-                      )}
-                    >
-                      <Hash className="w-4 h-4" />
-                      Marks
-                    </button>
-                    <button
-                      onClick={() => setViewMode('percentage')}
-                      className={cn(
-                        "flex items-center gap-2 px-6 py-3 rounded-[1.5rem] text-sm font-bold transition-all",
-                        viewMode === 'percentage' 
-                          ? "bg-indigo-600 text-white shadow-lg shadow-indigo-500/30" 
-                          : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200"
-                      )}
-                    >
-                      <Percent className="w-4 h-4" />
-                      Percentage
-                    </button>
-                  </div>
-                </motion.div>
-              )}
+              {/* View Mode Toggle Removed */}
 
               <MarksInput papers={activeTest.papers} setPapers={handleUpdateActiveTest} />
 
