@@ -11,7 +11,7 @@ import OverallStats from './components/OverallStats';
 import IndividualGraphs from './components/IndividualGraphs';
 import PerformanceTrend from './components/PerformanceTrend';
 import { motion, AnimatePresence } from 'motion/react';
-import { LayoutDashboard, Percent, Hash, Plus, GraduationCap } from 'lucide-react';
+import { LayoutDashboard, Percent, Hash, Plus, GraduationCap, Trash2, ChevronLeft, ChevronRight, MoreVertical } from 'lucide-react';
 import { cn } from './lib/utils';
 
 export default function App() {
@@ -19,6 +19,7 @@ export default function App() {
   const [activeTestId, setActiveTestId] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>('marks');
   const [theme, setTheme] = useState<Theme>('light');
+  const [contextMenu, setContextMenu] = useState<{ x: number, y: number, testId: string } | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -28,7 +29,7 @@ export default function App() {
     const onWheel = (e: WheelEvent) => {
       if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
         e.preventDefault();
-        el.scrollLeft += e.deltaY;
+        el.scrollLeft += e.deltaY * 1.5;
       }
     };
 
@@ -106,6 +107,12 @@ export default function App() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [tests, activeTestId]);
 
+  useEffect(() => {
+    const handleClick = () => setContextMenu(null);
+    window.addEventListener('click', handleClick);
+    return () => window.removeEventListener('click', handleClick);
+  }, []);
+
   const toggleTheme = () => setTheme(prev => prev === 'light' ? 'dark' : 'light');
 
   const handleUpdateActiveTest = (updatedPapers: Paper[]) => {
@@ -122,6 +129,41 @@ export default function App() {
     };
     setTests(prev => [...prev, newTest]);
     setActiveTestId(newTest.id);
+  };
+
+  const handleContextMenu = (e: React.MouseEvent, testId: string) => {
+    e.preventDefault();
+    setContextMenu({
+      x: e.clientX,
+      y: e.clientY,
+      testId
+    });
+  };
+
+  const deleteTest = (testId: string) => {
+    if (tests.length <= 1) return;
+    setTests(prev => {
+      const filtered = prev.filter(t => t.id !== testId);
+      if (activeTestId === testId) {
+        setActiveTestId(filtered[0].id);
+      }
+      return filtered;
+    });
+    setContextMenu(null);
+  };
+
+  const moveTest = (testId: string, direction: 'left' | 'right') => {
+    const index = tests.findIndex(t => t.id === testId);
+    if (index === -1) return;
+    
+    const newTests = [...tests];
+    const newIndex = direction === 'left' ? index - 1 : index + 1;
+    
+    if (newIndex >= 0 && newIndex < tests.length) {
+      [newTests[index], newTests[newIndex]] = [newTests[newIndex], newTests[index]];
+      setTests(newTests);
+    }
+    setContextMenu(null);
   };
 
   const hasData = activeTest && activeTest.papers.length > 0;
@@ -160,18 +202,22 @@ export default function App() {
             ref={scrollRef}
             className="flex items-center gap-4 overflow-x-auto pb-4 no-scrollbar scroll-smooth"
           >
-            {tests.map(test => (
+            {tests.map((test, index) => (
               <button
                 key={test.id}
                 onClick={() => setActiveTestId(test.id)}
+                onContextMenu={(e) => handleContextMenu(e, test.id)}
                 className={cn(
-                  "flex-shrink-0 flex items-center gap-3 px-6 py-3 rounded-2xl border transition-all duration-300",
+                  "flex-shrink-0 flex items-center gap-3 px-6 py-3 rounded-2xl border transition-all duration-300 relative group",
                   activeTestId === test.id
                     ? "bg-white dark:bg-zinc-900 border-indigo-500 shadow-lg shadow-indigo-500/10 scale-105 z-10"
                     : "bg-zinc-100 dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800 text-zinc-500 hover:border-zinc-300"
                 )}
                 id={`test-tab-${test.id}`}
               >
+                <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <MoreVertical className="w-3 h-3 text-zinc-300" />
+                </div>
                 <GraduationCap className={cn("w-5 h-5", activeTestId === test.id ? "text-indigo-500" : "text-zinc-400")} />
                 <div className="text-left">
                   <p className={cn("text-xs font-bold uppercase tracking-tight", activeTestId === test.id ? "text-indigo-500" : "text-zinc-400")}>
@@ -280,6 +326,58 @@ export default function App() {
           )}
         </AnimatePresence>
       </main>
+
+      {/* Context Menu */}
+      <AnimatePresence>
+        {contextMenu && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            style={{ 
+              position: 'fixed', 
+              top: contextMenu.y, 
+              left: contextMenu.x,
+              zIndex: 1000 
+            }}
+            className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-2 rounded-2xl shadow-2xl min-w-[180px]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="px-3 py-2 text-[10px] font-bold text-zinc-400 uppercase tracking-widest border-b border-zinc-100 dark:border-zinc-800 mb-1">
+              Test Actions
+            </div>
+            
+            <button
+              onClick={() => moveTest(contextMenu.testId, 'left')}
+              disabled={tests.findIndex(t => t.id === contextMenu.testId) === 0}
+              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 disabled:opacity-30 transition-colors"
+            >
+              <ChevronLeft className="w-4 h-4" />
+              Move Left
+            </button>
+            
+            <button
+              onClick={() => moveTest(contextMenu.testId, 'right')}
+              disabled={tests.findIndex(t => t.id === contextMenu.testId) === tests.length - 1}
+              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 disabled:opacity-30 transition-colors"
+            >
+              <ChevronRight className="w-4 h-4" />
+              Move Right
+            </button>
+            
+            <div className="h-px bg-zinc-100 dark:bg-zinc-800 my-1" />
+            
+            <button
+              onClick={() => deleteTest(contextMenu.testId)}
+              disabled={tests.length <= 1}
+              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 disabled:opacity-30 transition-colors"
+            >
+              <Trash2 className="w-4 h-4" />
+              Delete Test
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Background Decor */}
       <div className="fixed top-0 left-0 w-full h-full -z-50 pointer-events-none overflow-hidden">
