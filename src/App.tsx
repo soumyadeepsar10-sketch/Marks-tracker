@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Paper, Test, ViewMode, Theme } from './types';
 import ThemeToggle from './components/ThemeToggle';
 import MarksInput from './components/MarksInput';
@@ -19,6 +19,22 @@ export default function App() {
   const [activeTestId, setActiveTestId] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>('marks');
   const [theme, setTheme] = useState<Theme>('light');
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+
+    const onWheel = (e: WheelEvent) => {
+      if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+        e.preventDefault();
+        el.scrollLeft += e.deltaY;
+      }
+    };
+
+    el.addEventListener('wheel', onWheel, { passive: false });
+    return () => el.removeEventListener('wheel', onWheel);
+  }, []);
 
   const activeTest = tests.find(t => t.id === activeTestId) || null;
 
@@ -72,6 +88,24 @@ export default function App() {
     }
   }, [theme]);
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (tests.length <= 1) return;
+      
+      const currentIndex = tests.findIndex(t => t.id === activeTestId);
+      if (e.key === 'ArrowRight') {
+        const nextIndex = (currentIndex + 1) % tests.length;
+        setActiveTestId(tests[nextIndex].id);
+      } else if (e.key === 'ArrowLeft') {
+        const prevIndex = (currentIndex - 1 + tests.length) % tests.length;
+        setActiveTestId(tests[prevIndex].id);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [tests, activeTestId]);
+
   const toggleTheme = () => setTheme(prev => prev === 'light' ? 'dark' : 'light');
 
   const handleUpdateActiveTest = (updatedPapers: Paper[]) => {
@@ -122,7 +156,10 @@ export default function App() {
       <main className="container mx-auto max-w-5xl pb-32" id="main-content">
         {/* Test Selector Bar */}
         <div className="px-4 mb-12">
-          <div className="flex items-center gap-4 overflow-x-auto pb-4 no-scrollbar">
+          <div 
+            ref={scrollRef}
+            className="flex items-center gap-4 overflow-x-auto pb-4 no-scrollbar scroll-smooth"
+          >
             {tests.map(test => (
               <button
                 key={test.id}
@@ -175,7 +212,42 @@ export default function App() {
                 />
               </div>
 
-              {/* View Mode Toggle Removed */}
+              {/* View Mode Toggle */}
+              {hasData && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="flex justify-center mb-12 sticky top-4 z-40"
+                  id="global-view-toggle"
+                >
+                  <div className="flex bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl border border-zinc-200 dark:border-zinc-800 p-1.5 rounded-[2rem] shadow-2xl shadow-indigo-500/10">
+                    <button
+                      onClick={() => setViewMode('marks')}
+                      className={cn(
+                        "flex items-center gap-2 px-6 py-3 rounded-[1.5rem] text-sm font-bold transition-all",
+                        viewMode === 'marks' 
+                          ? "bg-indigo-600 text-white shadow-lg shadow-indigo-500/30" 
+                          : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200"
+                      )}
+                    >
+                      <Hash className="w-4 h-4" />
+                      Marks
+                    </button>
+                    <button
+                      onClick={() => setViewMode('percentage')}
+                      className={cn(
+                        "flex items-center gap-2 px-6 py-3 rounded-[1.5rem] text-sm font-bold transition-all",
+                        viewMode === 'percentage' 
+                          ? "bg-indigo-600 text-white shadow-lg shadow-indigo-500/30" 
+                          : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200"
+                      )}
+                    >
+                      <Percent className="w-4 h-4" />
+                      Percentage
+                    </button>
+                  </div>
+                </motion.div>
+              )}
 
               <MarksInput papers={activeTest.papers} setPapers={handleUpdateActiveTest} />
 
@@ -214,13 +286,6 @@ export default function App() {
         <div className="absolute top-[-10%] right-[-10%] w-[40%] h-[40%] bg-indigo-500/5 dark:bg-indigo-500/10 blur-[120px] rounded-full" />
         <div className="absolute bottom-[-10%] left-[-10%] w-[40%] h-[40%] bg-pink-500/5 dark:bg-pink-500/10 blur-[120px] rounded-full" />
       </div>
-      
-      {/* Footer */}
-      <footer className="fixed bottom-0 left-0 w-full p-6 flex justify-center pointer-events-none">
-        <div className="pointer-events-auto bg-white/70 dark:bg-zinc-900/70 backdrop-blur-lg border border-zinc-200 dark:border-zinc-800 px-6 py-2 rounded-full text-[10px] font-bold uppercase tracking-[0.3em] text-zinc-400 shadow-xl">
-          Kokanand Tracker v2.0
-        </div>
-      </footer>
     </div>
   );
 }

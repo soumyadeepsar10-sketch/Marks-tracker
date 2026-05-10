@@ -155,7 +155,6 @@ export default function MarksInput({ papers, setPapers }: MarksInputProps) {
                     max={paper.totalMarks}
                     value={paper.obtainedMarks ?? ''}
                     onChange={(e) => updatePaper(paper.id, { obtainedMarks: e.target.value === '' ? null : Number(e.target.value) })}
-                    placeholder="Score"
                     className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-2xl px-4 py-3 text-lg font-bold text-center focus:ring-4 focus:ring-indigo-500/10 outline-none transition-all dark:text-white"
                   />
                   {paper.obtainedMarks !== null && paper.obtainedMarks > paper.totalMarks && (
